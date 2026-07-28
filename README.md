@@ -34,22 +34,24 @@ The expired-stock number is the strongest actionable finding — every warehouse
 
 My first products-by-revenue query returned one row with 288,054 units sold — clearly broken. Root cause: a `random()` call inside a `JOIN` condition wasn't being re-evaluated per row in PostgreSQL, so nearly every sale ended up linked to the same product. Fixed by picking the random value first, then joining. The same underlying issue then showed up again in different logic used for `customer_id`, which I recognized as the same category of bug and fixed with a more robust pattern — indexing into an array with `random()` written directly in the expression, guaranteed to re-evaluate per row.
 
-Full breakdown of this and the data cleaning process is in the [project report](./report/MediCore_Analytics_Report.docx).
+Full breakdown of this and the data cleaning process is in the [project report](./MediCore_Analytics_Report.docx).
 
 ## Repo structure
 
-```
-sql/         → schema, seed data, cleaning, and analysis scripts, in order
-dashboard/   → standalone HTML dashboard (open directly in a browser)
-report/      → full written report (design decisions, cleaning process, findings)
-screenshots/ → dashboard previews
-```
+- `medicore_schema.sql` — database schema (7 tables, constraints, relationships)
+- `01_seed_reference_data.sql` — suppliers, warehouses, employees, customers, products
+- `02_seed_transactional_data.sql` — inventory and sales generation
+- `03_data_cleaning.sql` — duplicate merging, standardization, cleanup
+- `04_data_quality_flags.sql` — flagging outliers and price mismatches
+- `05_fix_sales_reseed.sql` / `06_fix_customer_id_reseed.sql` — fixes for two data-generation bugs found during analysis (see report for details)
+- `MediCore_Analytics_Dashboard.html` — standalone dashboard, open directly in a browser
+- `MediCore_Analytics_Report.docx` — full written report: design decisions, cleaning process, findings
 
 ## Running it yourself
 
 1. Create a PostgreSQL database
-2. Run the scripts in `/sql` in numbered order
-3. Open `/dashboard/MediCore_Analytics_Dashboard.html` in a browser to view the results, or connect Power BI to the database directly
+2. Run the medicore_schema.sql, 01_seed_reference_data.sql, 02_seed_transactional_data.sql, 03_data_cleaning.sql, 04_data_quality_flags.sql, 05_fix_sales_reseed.sql, 06_fix_customer_id_reseed.sql in numbered order
+3. Open MediCore_Analytics_Dashboard.html` in a browser to view the results, or connect Power BI to the database directly
 
 ## Live dashboard
 
