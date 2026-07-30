@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCore Analytics Sales and Distribution Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1B2A55;
+    --navy-deep:#101A38;
+    --bar:#28407A;
+    --bar-dark:#1B2A55;
+    --maroon:#5E1F2E;
+    --ink:#1B1D2A;
+    --ink-soft:#5B5D6E;
+    --ink-mute:#8B8DA0;
+    --card:#FFFFFF;
+    --line:#E4E7F0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'Inter',sans-serif;
+    background: linear-gradient(160deg, #DCE6FA 0%, #C8D8F5 45%, #B9CDF2 100%);
+    min-height:100vh;
+    padding:1.5rem;
+    color:var(--ink);
+  }
+  .wrap{max-width:1400px;margin:0 auto;}
+
+  /* header */
+  .header-card{
+    padding:1.6rem 2rem 1.3rem;
+    margin-bottom:1.3rem;
+  }
+  .header-card h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:26px;
+    color:var(--navy-deep);
+    letter-spacing:.01em;
+  }
+  .header-card p{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:15px;
+    color:#2E3A63;
+    margin-top:.3rem;
+  }
+
+  /* KPI / filter row */
+  .kpi-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:1.2rem;
+    margin-bottom:1.3rem;
+  }
+  .card{
+    background:var(--card);
+    border-radius:10px;
+    box-shadow:0 6px 18px rgba(20,30,70,0.12);
+    padding:1.2rem 1.4rem;
+  }
+  .kpi-number{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:32px;
+    color:var(--navy-deep);
+  }
+  .kpi-label{
+    font-size:12.5px;
+    letter-spacing:.04em;
+    color:var(--ink-mute);
+    text-transform:uppercase;
+    margin-top:.2rem;
+    font-weight:600;
+  }
+
+  .filter-title{
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:.6rem;
+  }
+  select.fake-filter{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:.5rem .6rem;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    color:var(--ink-soft);
+    background:#FAFBFD;
+  }
+  .date-range{
+    display:flex;
+    gap:.6rem;
+    align-items:center;
+  }
+  .date-box{
+    flex:1;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:.5rem .6rem;
+    font-size:13px;
+    color:var(--ink);
+    background:#FAFBFD;
+    font-family:'Inter',sans-serif;
+  }
+
+  /* chart cards */
+  .chart-title{
+    font-size:13.5px;
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--navy-deep);
+    text-transform:uppercase;
+    margin-bottom:1rem;
+  }
+  .grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1.2rem;
+    margin-bottom:1.2rem;
+  }
+  canvas{max-width:100%;}
+
+  /* region slicer buttons */
+  .region-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:0;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .region-btn{
+    padding:1.1rem .5rem;
+    text-align:center;
+    font-size:14px;
+    font-weight:500;
+    color:var(--ink);
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    background:#fff;
+    transition:.15s;
+    user-select:none;
+  }
+  .region-btn:nth-child(3n){border-right:none;}
+  .region-btn:hover{background:#EEF2FB;}
+  .region-btn.active{
+    background:var(--navy-deep);
+    color:#fff;
+    font-weight:600;
+  }
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  td{padding:.5rem 0;border-bottom:1px solid var(--line);}
+  td.name{color:var(--ink);}
+  td.bar-cell{width:60%;}
+  .hbar-track{background:#EEF1F8;border-radius:3px;height:16px;position:relative;}
+  .hbar-fill{background:var(--bar);height:100%;border-radius:3px;}
+  .hbar-fill.green{background:#0F5C3D;}
+
+  /* page tabs, like Power BI */
+  .page-tabs{
+    display:flex;
+    gap:1rem;
+    margin-top:1.5rem;
+    padding-top:1rem;
+    border-top:1px solid rgba(255,255,255,0.4);
+  }
+  .page-tab{
+    font-size:14px;
+    font-weight:500;
+    color:#2E3A63;
+    padding:.4rem .3rem;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+  }
+  .page-tab.active{
+    color:var(--navy-deep);
+    font-weight:700;
+    border-bottom:3px solid var(--navy-deep);
+  }
+  .page{display:none;}
+  .page.active{display:block;}
+
+  @media(max-width:900px){
+    .kpi-row{grid-template-columns:1fr 1fr;}
+    .grid-2{grid-template-columns:1fr;}
+    .region-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card header-card">
+    <h1>MEDICORE ANALYTICS SALES AND DISTRIBUTION DASHBOARD</h1>
+    <p>PostgreSQL-based analysis &middot; Jan 2023 &ndash; Dec 2025 &middot; 6 regional warehouses</p>
+  </div>
+
+  <!-- ============ PAGE 1 ============ -->
+  <div class="page active" id="page1">
+
+    <div class="kpi-row">
+      <div class="card">
+        <div class="kpi-number">208.56M</div>
+        <div class="kpi-label">Total Revenue</div>
+      </div>
+      <div class="card">
+        <div class="filter-title">product_name</div>
+        <select class="fake-filter"><option>All</option></select>
+      </div>
+      <div class="card">
+        <div class="kpi-number">29.26M</div>
+        <div class="kpi-label">Expired Stock Value</div>
+      </div>
+      <div class="card">
+        <div class="filter-title">sale_date</div>
+        <div class="date-range">
+          <div class="date-box">1/1/2023</div>
+          <div class="date-box">12/31/2025</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">Expired Stock Value by Warehouse</div>
+        <div style="position:relative;height:230px;">
+          <canvas id="expiredChart"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Top Ten Products by Revenue</div>
+        <div style="position:relative;height:280px;">
+          <canvas id="productChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1.2rem;">
+      <div class="chart-title">Monthly Revenue Trend</div>
+      <div style="position:relative;height:220px;">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <div class="page-tabs">
+      <div class="page-tab active" data-page="page1">Page 1</div>
+      <div class="page-tab" data-page="page2">Page 2</div>
+    </div>
+  </div>
+
+  <!-- ============ PAGE 2 ============ -->
+  <div class="page" id="page2">
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">region</div>
+        <div class="region-grid" id="regionSlicer">
+          <div class="region-btn" data-region="North Central">North Cen...</div>
+          <div class="region-btn" data-region="North East">North East</div>
+          <div class="region-btn" data-region="North West">North West</div>
+          <div class="region-btn" data-region="South East">South East</div>
+          <div class="region-btn" data-region="South South">South South</div>
+          <div class="region-btn active" data-region="South West">South West</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="chart-title">Revenue by Region</div>
+        <div style="position:relative;height:230px;">
+          <canvas id="regionChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="chart-title">Top Ten Customers by Sales</div>
+        <table id="customerTable"></table>
+      </div>
+      <div class="card">
+        <div class="chart-title">Sales Rep Performance</div>
+        <table id="repTable"></table>
+      </div>
+    </div>
+
+    <div class="page-tabs">
+      <div class="page-tab" data-page="page1">Page 1</div>
+      <div class="page-tab active" data-page="page2">Page 2</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#5B5D6E';
+const fmtM = v => (v/1000000).toFixed(0) + 'M';
+
+/* -------- data -------- */
+const monthly = [
+["Jan 2023",6684550],["Feb 2023",4626020],["Mar 2023",6129830],["Apr 2023",6903750],
+["May 2023",5189610],["Jun 2023",4954870],["Jul 2023",6233160],["Aug 2023",6182490],
+["Sep 2023",4974900],["Oct 2023",6247480],["Nov 2023",5319370],["Dec 2023",5863930],
+["Jan 2024",5467950],["Feb 2024",5367090],["Mar 2024",5787800],["Apr 2024",6239970],
+["May 2024",5411730],["Jun 2024",5721380],["Jul 2024",6515070],["Aug 2024",5308310],
+["Sep 2024",7223610],["Oct 2024",5431490],["Nov 2024",5540710],["Dec 2024",5774150],
+["Jan 2025",5824300],["Feb 2025",5353290],["Mar 2025",5745920],["Apr 2025",5913500],
+["May 2025",5834340],["Jun 2025",5618190],["Jul 2025",5617580],["Aug 2025",5453390],
+["Sep 2025",5538110],["Oct 2025",6088750],["Nov 2025",6202920],["Dec 2025",6271200]
+];
+const products = [
+["Surgical Gloves (...",26636500],["Disposable Syrin...",21808600],["Face Masks (50pk)",17267400],
+["Salbutamol Inha...",14203350],["Wound Dressing...",9037800],["Azithromycin 25...",8665750],
+["Multivitamin Syr...",7749300],["Ciprofloxacin 50...",7260000],["Lisinopril 10mg",5959200],
+["Omeprazole 20mg",5700000]
+];
+const expired = [
+["Lagos Centra...",5658970],["Kano Region...",5656430],["Abuja Distrib...",4752570],
+["Enugu Wareh...",4475660],["Maiduguri D...",4346290],["Port Harcour...",4142650]
+];
+const regions = [
+["South West",51299280],["South South",42849980],["North West",42677980],
+["North Central",32378480],["South East",29546600],["North East",9808390]
+];
+const customers = [
+["Trust Care Pharmacy",3798000],["Ibadan Pharma Hub",3696000],["Port Harcourt Medic...",3652000],
+["Delta Pharmacy Chain",3598000],["Kano State Hospital",3540000],["Rivers Community C...",3490000],
+["Capital Health Clinic",3410000],["Maiduguri Central H...",3350000],["Abuja General Hosp...",3280000],
+["Sokoto Regional Ho...",3210000]
+];
+const reps = [
+["Blessing Eze",22019710],["Chinedu Okafor",21080050],["Grace Udo",19827770]
+];
+
+/* -------- KPI charts page 1 -------- */
+new Chart(document.getElementById('expiredChart'),{
+  type:'bar',
+  data:{labels:expired.map(r=>r[0]),datasets:[{data:expired.map(r=>r[1]),backgroundColor:'#5E1F2E',borderRadius:3,barThickness:36}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:10.5}},grid:{display:false}},y:{ticks:{callback:v=>fmtM(v)+'M'},grid:{color:'#EEF1F8'}}}}
+});
+
+new Chart(document.getElementById('productChart'),{
+  type:'bar',
+  data:{labels:products.map(r=>r[0]),datasets:[{data:products.map(r=>r[1]),backgroundColor:'#28407A',borderRadius:3,barThickness:16}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{callback:v=>fmtM(v)+'M'},grid:{color:'#EEF1F8'}},y:{ticks:{font:{size:11}},grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{labels:monthly.map(r=>r[0]),datasets:[{data:monthly.map(r=>r[1]),borderColor:'#00B8D9',backgroundColor:'rgba(0,184,217,0.08)',fill:true,borderWidth:2.2,pointRadius:0,tension:.3}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{maxTicksLimit:6,font:{size:10.5}},grid:{display:false}},y:{ticks:{callback:v=>fmtM(v)+'M'},grid:{color:'#EEF1F8'}}}}
+});
+
+/* -------- Page 2 charts -------- */
+const regionColors = () => regions.map(r => r[0] === selectedRegion ? '#1B2A55' : '#8FA3D6');
+let selectedRegion = 'South West';
+
+const regionChart = new Chart(document.getElementById('regionChart'),{
+  type:'bar',
+  data:{labels:regions.map(r=>r[0]),datasets:[{data:regions.map(r=>r[1]),backgroundColor:regionColors(),borderRadius:3,barThickness:34}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:10.5}},grid:{display:false}},y:{ticks:{callback:v=>fmtM(v)+'M'},grid:{color:'#EEF1F8'}}}}
+});
+
+function hbar(container, data, max, colorClass){
+  container.innerHTML = data.map(r => `
+    <tr>
+      <td class="name">${r[0]}</td>
+      <td class="bar-cell">
+        <div class="hbar-track"><div class="hbar-fill ${colorClass||''}" style="width:${(r[1]/max*100).toFixed(1)}%"></div></div>
+      </td>
+    </tr>`).join('');
+}
+hbar(document.getElementById('customerTable'), customers, 4000000, 'green');
+hbar(document.getElementById('repTable'), reps, 22019710);
+
+/* -------- region slicer interactivity -------- */
+document.querySelectorAll('.region-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedRegion = btn.dataset.region;
+    regionChart.data.datasets[0].backgroundColor = regionColors();
+    regionChart.update();
+  });
+});
+
+/* -------- page tab switching -------- */
+document.querySelectorAll('.page-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(tab.dataset.page).classList.add('active');
+    document.querySelectorAll(`[data-page="${tab.dataset.page}"]`).forEach(t => t.classList.add('active'));
+  });
+});
+</script>
+</body>
+</html>
