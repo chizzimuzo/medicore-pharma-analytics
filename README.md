@@ -45,6 +45,7 @@ Full breakdown of this and the data cleaning process is in the [project report](
 - `04_data_quality_flags.sql` — flagging outliers and price mismatches
 - `05_fix_sales_reseed.sql` / `06_fix_customer_id_reseed.sql` — fixes for two data-generation bugs found during analysis (see report for details)
 - `MediCore_Analytics_Dashboard.html` — standalone dashboard, open directly in a browser
+- `MediCore_Analytics_Dashboard.pbix` — Power BI version with live slicers (requires Power BI Desktop to open)
 - `MediCore_Analytics_Report.docx` — full written report: design decisions, cleaning process, findings
 
 ## Running it yourself
@@ -55,7 +56,7 @@ Full breakdown of this and the data cleaning process is in the [project report](
 
 ## Live dashboard
 
-Open [`dashboard/MediCore_Analytics_Dashboard.html`](./dashboard/MediCore_Analytics_Dashboard.html) directly, or view a preview below.
+Open [MediCore_Analytics_Dashboard.html](./MediCore_Analytics_Dashboard.html) directly in a browser to view the results, or connect Power BI to the database directly.
 
 <!-- Add a screenshot here once uploaded, e.g.: -->
 <!-- ![Dashboard preview](./screenshots/dashboard.png) -->
